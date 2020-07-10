@@ -1,0 +1,16 @@
+- [] Form to add player
+- [] Display list of players
+- [] Sort players by initiative
+- [] Button to go to the next player
+- [] Display the players name
+- [] Button to go to the previous player
+- [] Remember player when adding player
+- [] Store current state in browser storage
+- [] Allow players to be removed
+- [] Remember player when removing character
+- [] Change Initiative after adding
+- [] Hide form by default
+- [] Import Html methods
+- [] Elm format
+- [] Store current state in browser storage
+- [] Track monster HP
