@@ -4,7 +4,7 @@ import Array
 import Browser
 import Html
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onBlur, onClick, onInput)
 
 
 indexOf : (a -> Bool) -> List a -> Int
@@ -20,6 +20,8 @@ indexOf match list =
 type Msg
     = SetName String
     | SetInitiative String
+    | ChangeInitiative String String
+    | SortPlayers
     | AddPlayer
     | RemovePlayer String
     | NextPlayer
@@ -36,6 +38,7 @@ type alias Model =
     { playerList : List Player
     , input : Player
     , turn : Int
+    , temp : String
     }
 
 
@@ -61,14 +64,21 @@ getPlayer turn playerList =
         |> .name
 
 
-addPlayer : Model -> Model
-addPlayer model =
+sortPlayers : Model -> Model
+sortPlayers model =
+    { model
+        | playerList = model.playerList |> List.sortBy .initiative |> List.reverse
+    }
+
+
+addPlayer : String -> Int -> Model -> Model
+addPlayer name initiative model =
     let
         currentPlayer =
             getPlayer model.turn model.playerList
 
         newPlayers =
-            model.input :: model.playerList |> List.sortBy .initiative |> List.reverse
+            Player name initiative :: model.playerList |> List.sortBy .initiative |> List.reverse
 
         turn =
             case model.turn of
@@ -132,6 +142,21 @@ removePlayer name model =
     }
 
 
+changeInitiative : String -> Int -> Model -> Model
+changeInitiative name initiative model =
+    let
+        updateCorrectPlayer : Player -> Player
+        updateCorrectPlayer player =
+            case name == player.name of
+                True ->
+                    Player name initiative
+
+                _ ->
+                    player
+    in
+    { model | playerList = model.playerList |> List.map updateCorrectPlayer }
+
+
 update : Msg -> Model -> Model
 update msg model =
     let
@@ -152,8 +177,11 @@ update msg model =
         SetInitiative initiative ->
             { model | input = model.input |> setInputInitiative initiative }
 
+        ChangeInitiative name initiative ->
+            model |> changeInitiative name (initiative |> String.toInt |> Maybe.withDefault 0)
+
         AddPlayer ->
-            model |> addPlayer
+            model |> addPlayer model.input.name model.input.initiative
 
         RemovePlayer name ->
             model |> removePlayer name
@@ -164,6 +192,9 @@ update msg model =
         PreviousPlayer ->
             { model | turn = model.turn - 1 }
 
+        SortPlayers ->
+            model |> sortPlayers
+
 
 viewPlayerList : Model -> Html.Html Msg
 viewPlayerList model =
@@ -172,7 +203,14 @@ viewPlayerList model =
         (\player ->
             Html.tr []
                 [ Html.td [] [ Html.text player.name ]
-                , Html.td [] [ Html.text (String.fromInt player.initiative) ]
+                , Html.td []
+                    [ Html.input
+                        [ onBlur SortPlayers
+                        , onInput (ChangeInitiative player.name)
+                        , value (player.initiative |> String.fromInt)
+                        ]
+                        []
+                    ]
                 , Html.td [] [ Html.button [ onClick (RemovePlayer player.name) ] [ Html.text "X" ] ]
                 ]
         )
@@ -227,7 +265,7 @@ view model =
 
 init : Model
 init =
-    Model [] (Player "" 0) 0
+    Model [] (Player "" 0) 0 ""
 
 
 main =

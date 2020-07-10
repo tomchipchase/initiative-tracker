@@ -7,8 +7,8 @@
 - [x] Remember player when adding player
 - [x] Allow players to be removed
 - [x] Remember player when removing character
+- [x] Change Initiative after adding
 - [] Store current state in browser storage
-- [] Change Initiative after adding
 - [] Hide form by default
 - [] Import Html methods
 - [] Elm format
