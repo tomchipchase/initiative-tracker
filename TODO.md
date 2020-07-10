@@ -3,7 +3,7 @@
 - [x] Sort players by initiative
 - [x] Button to go to the next player
 - [x] Display the players name
-- [] Button to go to the previous player
+- [x] Button to go to the previous player
 - [] Remember player when adding player
 - [] Store current state in browser storage
 - [] Allow players to be removed

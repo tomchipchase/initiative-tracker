@@ -12,6 +12,7 @@ type Msg
     | SetInitiative String
     | AddPlayer
     | NextPlayer
+    | PreviousPlayer
 
 
 type alias Player =
@@ -56,6 +57,9 @@ update msg model =
         NextPlayer ->
             { model | turn = model.turn + 1 }
 
+        PreviousPlayer ->
+            { model | turn = model.turn - 1 }
+
 
 viewPlayerList : Model -> Html.Html Msg
 viewPlayerList model =
@@ -90,10 +94,11 @@ viewPlayerForm model =
         ]
 
 
-viewNextButton : Model -> Html.Html Msg
-viewNextButton model =
+viewTurnControl : Model -> Html.Html Msg
+viewTurnControl model =
     Html.div []
-        [ Html.text (String.fromInt model.turn)
+        [ Html.button [ onClick PreviousPlayer ] [ Html.text "<" ]
+        , Html.text (String.fromInt model.turn)
         , Html.button [ onClick NextPlayer ] [ Html.text ">" ]
         ]
 
@@ -124,7 +129,7 @@ view model =
     Html.div []
         [ viewCurrentPlayer model
         , viewPlayerList model
-        , viewNextButton model
+        , viewTurnControl model
         , viewPlayerForm model
         ]
 
