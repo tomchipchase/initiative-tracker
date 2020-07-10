@@ -1,6 +1,6 @@
 - [x] Form to add player
 - [x] Display list of players
-- [] Sort players by initiative
+- [x] Sort players by initiative
 - [] Button to go to the next player
 - [] Display the players name
 - [] Button to go to the previous player

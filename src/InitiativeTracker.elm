@@ -46,7 +46,7 @@ update msg model =
 
         AddPlayer ->
             { model
-                | playerList = model.input :: model.playerList
+                | playerList = model.input :: model.playerList |> List.sortBy .initiative |> List.reverse
                 , input = Player "" 0
             }
 
