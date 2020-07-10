@@ -10,6 +10,7 @@ type Msg
     = SetName String
     | SetInitiative String
     | AddPlayer
+    | NextPlayer
 
 
 type alias Player =
@@ -21,6 +22,7 @@ type alias Player =
 type alias Model =
     { playerList : List Player
     , input : Player
+    , turn : Int
     }
 
 
@@ -49,6 +51,9 @@ update msg model =
                 | playerList = model.input :: model.playerList |> List.sortBy .initiative |> List.reverse
                 , input = Player "" 0
             }
+
+        NextPlayer ->
+            { model | turn = model.turn + 1 }
 
 
 viewPlayerList : Model -> Html.Html Msg
@@ -84,17 +89,26 @@ viewPlayerForm model =
         ]
 
 
+viewNextButton : Model -> Html.Html Msg
+viewNextButton model =
+    Html.div []
+        [ Html.text (String.fromInt model.turn)
+        , Html.button [ onClick NextPlayer ] [ Html.text ">" ]
+        ]
+
+
 view : Model -> Html.Html Msg
 view model =
     Html.div []
         [ viewPlayerList model
+        , viewNextButton model
         , viewPlayerForm model
         ]
 
 
 init : Model
 init =
-    Model [] (Player "" 0)
+    Model [] (Player "" 0) 0
 
 
 main =
