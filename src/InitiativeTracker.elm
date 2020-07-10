@@ -1,5 +1,6 @@
 module InitiativeTracker exposing (..)
 
+import Array
 import Browser
 import Html
 import Html.Attributes exposing (..)
@@ -97,10 +98,32 @@ viewNextButton model =
         ]
 
 
+viewCurrentPlayer : Model -> Html.Html Msg
+viewCurrentPlayer model =
+    let
+        index =
+            case List.length model.playerList of
+                0 ->
+                    0
+
+                n ->
+                    modBy n model.turn
+
+        name =
+            model.playerList
+                |> Array.fromList
+                |> Array.get index
+                |> Maybe.withDefault (Player "" 0)
+                |> .name
+    in
+    Html.div [] [ Html.text name ]
+
+
 view : Model -> Html.Html Msg
 view model =
     Html.div []
-        [ viewPlayerList model
+        [ viewCurrentPlayer model
+        , viewPlayerList model
         , viewNextButton model
         , viewPlayerForm model
         ]
