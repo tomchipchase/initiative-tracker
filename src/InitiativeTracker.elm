@@ -12,57 +12,94 @@ type Msg
     | AddPlayer
 
 
+type alias Player =
+    { name : String
+    , initiative : Int
+    }
+
+
 type alias Model =
-    { playerName : String
-    , playerInitiative : Int
+    { playerList : List Player
+    , input : Player
     }
 
 
 update : Msg -> Model -> Model
 update msg model =
+    let
+        setInputName name input =
+            { input | name = name }
+
+        setInputInitiative initiative input =
+            { input
+                | initiative = initiative |> String.toInt |> Maybe.withDefault 0
+            }
+    in
     case
         msg
     of
         SetName name ->
-            { model | playerName = name }
+            { model | input = model.input |> setInputName name }
 
         SetInitiative initiative ->
-            { model
-                | playerInitiative = initiative |> String.toInt |> Maybe.withDefault 0
-            }
+            { model | input = model.input |> setInputInitiative initiative }
 
         AddPlayer ->
-            init
+            { model
+                | playerList = model.input :: model.playerList
+                , input = Player "" 0
+            }
+
+
+viewPlayerList : Model -> Html.Html Msg
+viewPlayerList model =
+    Html.table []
+        (List.map
+            (\player ->
+                Html.tr []
+                    [ Html.td [] [ Html.text player.name ]
+                    , Html.td [] [ Html.text (String.fromInt player.initiative) ]
+                    ]
+            )
+            model.playerList
+        )
 
 
 viewPlayerForm : Model -> Html.Html Msg
 viewPlayerForm model =
-    Html.form []
+    Html.div []
         [ Html.input
             [ placeholder "Player Name"
             , onInput SetName
+            , value model.input.name
             ]
             []
         , Html.input
             [ placeholder "Initiative"
             , onInput SetInitiative
+            , value (model.input.initiative |> String.fromInt)
             ]
             []
-        , Html.button
-            [ onClick AddPlayer
-            ]
-            [ Html.text "Add" ]
+        , Html.button [ onClick AddPlayer ] [ Html.text "Add" ]
+        ]
+
+
+view : Model -> Html.Html Msg
+view model =
+    Html.div []
+        [ viewPlayerList model
+        , viewPlayerForm model
         ]
 
 
 init : Model
 init =
-    Model "" 0
+    Model [] (Player "" 0)
 
 
 main =
     Browser.sandbox
-        { init = Model "" 0
+        { init = init
         , update = update
-        , view = viewPlayerForm
+        , view = view
         }
