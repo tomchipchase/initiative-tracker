@@ -7,10 +7,21 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 
 
+indexOf : (a -> Bool) -> List a -> Int
+indexOf match list =
+    list
+        |> List.indexedMap Tuple.pair
+        |> List.filter (\( idx, item ) -> match item)
+        |> List.map Tuple.first
+        |> List.head
+        |> Maybe.withDefault 0
+
+
 type Msg
     = SetName String
     | SetInitiative String
     | AddPlayer
+    | RemovePlayer String
     | NextPlayer
     | PreviousPlayer
 
@@ -25,6 +36,99 @@ type alias Model =
     { playerList : List Player
     , input : Player
     , turn : Int
+    }
+
+
+type alias CurrentPlayerViewModel =
+    { currentPlayer : String }
+
+
+getPlayer : Int -> List Player -> String
+getPlayer turn playerList =
+    let
+        index =
+            case List.length playerList of
+                0 ->
+                    0
+
+                n ->
+                    modBy n turn
+    in
+    playerList
+        |> Array.fromList
+        |> Array.get index
+        |> Maybe.withDefault (Player "" 0)
+        |> .name
+
+
+addPlayer : Model -> Model
+addPlayer model =
+    let
+        currentPlayer =
+            getPlayer model.turn model.playerList
+
+        newPlayers =
+            model.input :: model.playerList |> List.sortBy .initiative |> List.reverse
+
+        turn =
+            case model.turn of
+                0 ->
+                    0
+
+                _ ->
+                    newPlayers |> indexOf (\player -> player.name == currentPlayer)
+    in
+    { model
+        | playerList = newPlayers
+        , input = Player "" 0
+        , turn = turn
+    }
+
+
+removePlayer : String -> Model -> Model
+removePlayer name model =
+    let
+        playerCount =
+            List.length model.playerList
+
+        round =
+            case playerCount of
+                0 ->
+                    0
+
+                n ->
+                    model.turn // n
+
+        oldIndex =
+            case playerCount of
+                0 ->
+                    0
+
+                n ->
+                    modBy n model.turn
+
+        currentPlayer =
+            getPlayer oldIndex model.playerList
+
+        index =
+            if currentPlayer == name then
+                oldIndex + 1
+
+            else
+                oldIndex
+
+        newPlayers =
+            model.playerList |> List.filter (\player -> player.name /= name)
+
+        newIndex =
+            newPlayers |> indexOf (\player -> player.name == currentPlayer)
+
+        turn =
+            (round * (playerCount - 1)) + newIndex
+    in
+    { model
+        | playerList = newPlayers
+        , turn = turn
     }
 
 
@@ -49,10 +153,10 @@ update msg model =
             { model | input = model.input |> setInputInitiative initiative }
 
         AddPlayer ->
-            { model
-                | playerList = model.input :: model.playerList |> List.sortBy .initiative |> List.reverse
-                , input = Player "" 0
-            }
+            model |> addPlayer
+
+        RemovePlayer name ->
+            model |> removePlayer name
 
         NextPlayer ->
             { model | turn = model.turn + 1 }
@@ -64,14 +168,13 @@ update msg model =
 viewPlayerList : Model -> Html.Html Msg
 viewPlayerList model =
     Html.table []
-        (List.map
-            (\player ->
-                Html.tr []
-                    [ Html.td [] [ Html.text player.name ]
-                    , Html.td [] [ Html.text (String.fromInt player.initiative) ]
-                    ]
-            )
-            model.playerList
+        List.map
+        (\player ->
+            Html.tr []
+                [ Html.td [] [ Html.text player.name ]
+                , Html.td [] [ Html.text (String.fromInt player.initiative) ]
+                , Html.td [] [ Html.button [ onClick (RemovePlayer player.name) ] [ Html.text "X" ] ]
+                ]
         )
 
 
@@ -106,22 +209,10 @@ viewTurnControl model =
 viewCurrentPlayer : Model -> Html.Html Msg
 viewCurrentPlayer model =
     let
-        index =
-            case List.length model.playerList of
-                0 ->
-                    0
-
-                n ->
-                    modBy n model.turn
-
-        name =
-            model.playerList
-                |> Array.fromList
-                |> Array.get index
-                |> Maybe.withDefault (Player "" 0)
-                |> .name
+        currentPlayer =
+            getPlayer model.turn model.playerList
     in
-    Html.div [] [ Html.text name ]
+    Html.div [] [ Html.text currentPlayer ]
 
 
 view : Model -> Html.Html Msg

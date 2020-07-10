@@ -4,10 +4,10 @@
 - [x] Button to go to the next player
 - [x] Display the players name
 - [x] Button to go to the previous player
-- [] Remember player when adding player
+- [x] Remember player when adding player
+- [x] Allow players to be removed
+- [x] Remember player when removing character
 - [] Store current state in browser storage
-- [] Allow players to be removed
-- [] Remember player when removing character
 - [] Change Initiative after adding
 - [] Hide form by default
 - [] Import Html methods
